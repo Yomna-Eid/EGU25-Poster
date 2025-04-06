@@ -1,0 +1,304 @@
+---
+title: "CaseStudy_Imperviousness"
+author: "Yomna Eid"
+date: "2024-12-31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Set the working directory, and load the data locally-present from its directory. The dataset is the High Resolution Layer maps for Impervioussness Density provided by the Copernicus Monitoring Service, with a native resolution of 20m.
+```{r}
+setwd("~/Dead Laptop Files/Documents/1b. PhD/2. On-going Publications/1. Downsampling/Analysis Code")
+
+maps <- list.files(path = r"(C:\Users\yeid\Documents\Dead Laptop Files\Documents\1b. PhD\2. On-going Publications\1. Downsampling\Data\Imperviousness\Results\)", pattern = "\\.tif$", recursive = TRUE,  full.names = TRUE)
+```
+
+Load the packages needed
+```{r}
+library(stars)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(rnaturalearthhires)
+library(dplyr)
+```
+Define the Na-value, and subset the dataset to our AOI (which is the state of North-Rhine Westphalia in Germany)
+```{r}
+nodata_value <- 250
+imperviousness <- lapply(maps, function(file) {
+  read_stars(file, NA_value = nodata_value)
+})
+attr(imperviousness, "NA_value") <- nodata_value
+#map_germany <- ne_countries(type = "countries", country = "Germany", scale = "medium", returnclass = "sf")  |> st_transform(st_crs(imperviousness[[1]]))
+
+NRW <- ne_states(country = "germany") %>% filter(name == "Nordrhein-Westfalen") |> st_transform(st_crs(imperviousness[[1]]))
+
+threshold_value <- 30
+```
+
+Using a threshold value of 30% imperviousness, for each year that the map is provided (2006 to 2018), the subsetted dataset is classified into a binary non-impervious (or 0 if less than 30%) and impervious (or 1 if more than 30%)
+
+For the 3-year period of 2005, 2006, 2007
+
+```{r}
+imperv_2006 <- do.call(st_mosaic, imperviousness[1:2]) %>% st_crop(NRW$geometry) %>% st_apply(c("x", "y"), function(x) {
+  ifelse(x > threshold_value, 1, 0)}) %>% setNames("imperviousness_2006")
+attr(imperv_2006, "year") <- 2006
+
+plot(imperv_2006)
+```
+
+For the 3-year period of 2008, 2009, 2010
+```{r}
+imperv_2009 <- do.call(st_mosaic, imperviousness[3:4]) %>% st_crop(NRW$geometry) %>% st_apply(c("x", "y"), function(x) {
+  ifelse(x > threshold_value, 1, 0)}) %>% setNames("imperviousness_2009")
+attr(imperv_2009, "year") <- 2009
+
+plot(imperv_2009)
+```
+
+For the 3-year period of 2011, 2012, 2013
+
+```{r}
+imperv_2012 <- do.call(st_mosaic, imperviousness[5:6]) %>% st_crop(NRW$geometry) %>% st_apply(c("x", "y"), function(x) {
+  ifelse(x > threshold_value, 1, 0)}) %>% setNames("imperviousness_2012") 
+attr(imperv_2012, "year") <- 2012
+
+plot(imperv_2012)
+```
+For the 3-year period of 2014, 2015, 2016
+
+```{r}
+imperv_2015 <- do.call(st_mosaic, imperviousness[7:8]) %>% st_crop(NRW$geometry) %>% st_apply(c("x", "y"), function(x) {
+  ifelse(x > threshold_value, 1, 0)}) %>% setNames("imperviousness_2015")
+attr(imperv_2015, "year") <- 2015
+
+plot(imperv_2015)
+```
+
+For the 3-year period of 2017, 2018, 2019
+
+```{r}
+## Native resolution is 10m
+#imperv_2018 <- do.call(st_mosaic, imperviousness[9:65]) %>% st_crop(NRW$geometry) %>% st_apply(c("x", "y"), function(x) {
+#  ifelse(x > threshold_value, 1, 0)}) #%>%  st_as_stars(downsample = c(1,1))
+
+  imperv_2018 <- do.call(st_mosaic, imperviousness[9:65]) %>% st_crop(NRW$geometry) %>% st_apply(c("x", "y"), function(x) {
+    ifelse(x > threshold_value, 1, 0)}) %>% setNames("imperviousness_2018") #%>%  st_downsample(c(1,1))
+  attr(imperv_2018, "year") <- 2018
+
+plot(imperv_2018)
+```
+
+We now downsample the imperviousness raster map from a 20m native resolution to lower resolutions of 40m, 80m, 100m, 200m, 400m, 800m, 1km, 2km, 4km, 8km, 10km. Then we save the resulting maps.
+
+```{r}
+downsampled40m_2006 <- st_downsample(imperv_2006, c(1,1))
+downsampled80m_2006 <- st_downsample(imperv_2006, c(3,3))
+downsampled100m_2006 <- st_downsample(imperv_2006, c(4,4))
+downsampled200m_2006 <- st_downsample(imperv_2006, c(9,9))
+downsampled400m_2006 <- st_downsample(imperv_2006, c(19,19))
+downsampled800m_2006 <- st_downsample(imperv_2006, c(39,39))
+downsampled1000m_2006 <- st_downsample(imperv_2006, c(49,49))
+downsampled2000m_2006 <- st_downsample(imperv_2006, c(99,99))
+downsampled4000m_2006 <- st_downsample(imperv_2006, c(199,199))
+downsampled8000m_2006 <- st_downsample(imperv_2006, c(399,399))
+downsampled10000m_2006 <- st_downsample(imperv_2006, c(499,499))
+
+ds_2006 <- list(downsampled40m_2006,downsampled80m_2006,downsampled100m_2006,
+             downsampled200m_2006,downsampled400m_2006,downsampled800m_2006,
+             downsampled1000m_2006,downsampled2000m_2006,downsampled4000m_2006,
+             downsampled8000m_2006,downsampled10000m_2006)
+
+write_stars(imperv_2006, ".tif")
+
+for (i in seq_along(ds_2006)) {
+  write_stars(ds_2006[[i]], paste0("impervious2006_downsampled_", i, ".tif"))
+}
+```
+
+We repeat the same downsampling scehma from 2006, to the maps of 2009.
+ 
+```{r}
+downsampled40m_2009 <- st_downsample(imperv_2009, c(1,1))
+downsampled80m_2009 <- st_downsample(imperv_2009, c(3,3))
+downsampled100m_2009 <- st_downsample(imperv_2009, c(4,4))
+downsampled200m_2009 <- st_downsample(imperv_2009, c(9,9))
+downsampled400m_2009 <- st_downsample(imperv_2009, c(19,19))
+downsampled800m_2009 <- st_downsample(imperv_2009, c(39,39))
+downsampled1000m_2009 <- st_downsample(imperv_2009, c(49,49))
+downsampled2000m_2009 <- st_downsample(imperv_2009, c(99,99))
+downsampled4000m_2009 <- st_downsample(imperv_2009, c(199,199))
+downsampled8000m_2009 <- st_downsample(imperv_2009, c(399,399))
+downsampled10000m_2009 <- st_downsample(imperv_2009, c(499,499))
+
+ds_2009 <- list(downsampled40m_2009,downsampled80m_2009,downsampled100m_2009,
+             downsampled200m_2009,downsampled400m_2009,downsampled800m_2009,
+             downsampled1000m_2009,downsampled2000m_2009,downsampled4000m_2009,
+             downsampled8000m_2009,downsampled10000m_2009)
+
+write_stars(imperv_2009, "impervious2009_20m.tif")
+
+for (i in seq_along(ds_2009)) {
+  write_stars(ds_2009[[i]], paste0("impervious2009_downsampled_", i, ".tif"))
+}
+```
+
+And again for 2012.
+
+```{r}
+downsampled40m_2012 <- st_downsample(imperv_2012, c(1,1))
+downsampled80m_2012 <- st_downsample(imperv_2012, c(3,3))
+downsampled100m_2012 <- st_downsample(imperv_2012, c(4,4))
+downsampled200m_2012 <- st_downsample(imperv_2012, c(9,9))
+downsampled400m_2012 <- st_downsample(imperv_2012, c(19,19))
+downsampled800m_2012 <- st_downsample(imperv_2012, c(39,39))
+downsampled1000m_2012 <- st_downsample(imperv_2012, c(49,49))
+downsampled2000m_2012 <- st_downsample(imperv_2012, c(99,99))
+downsampled4000m_2012 <- st_downsample(imperv_2012, c(199,199))
+downsampled8000m_2012 <- st_downsample(imperv_2012, c(399,399))
+downsampled10000m_2012 <- st_downsample(imperv_2012, c(499,499))
+
+ds_2012 <- list(downsampled40m_2012,downsampled80m_2012,downsampled100m_2012,
+             downsampled200m_2012,downsampled400m_2012,downsampled800m_2012,
+             downsampled1000m_2012,downsampled2000m_2012,downsampled4000m_2012,
+             downsampled8000m_2012,downsampled10000m_2012)
+
+write_stars(imperv_2012, "impervious2012_20m.tif")
+
+for (i in seq_along(ds_2012)) {
+  write_stars(ds_2012[[i]], paste0("impervious2012_downsampled_", i, ".tif"))
+}
+```
+
+And 2015.
+
+```{r}
+downsampled40m_2015 <- st_downsample(imperv_2015, c(1,1))
+downsampled80m_2015 <- st_downsample(imperv_2015, c(3,3))
+downsampled100m_2015 <- st_downsample(imperv_2015, c(4,4))
+downsampled200m_2015 <- st_downsample(imperv_2015, c(9,9))
+downsampled400m_2015 <- st_downsample(imperv_2015, c(19,19))
+downsampled800m_2015 <- st_downsample(imperv_2015, c(39,39))
+downsampled1000m_2015 <- st_downsample(imperv_2015, c(49,49))
+downsampled2000m_2015 <- st_downsample(imperv_2015, c(99,99))
+downsampled4000m_2015 <- st_downsample(imperv_2015, c(199,199))
+downsampled8000m_2015 <- st_downsample(imperv_2015, c(399,399))
+downsampled10000m_2015 <- st_downsample(imperv_2015, c(499,499))
+
+ds_2015 <- list(downsampled40m_2015,downsampled80m_2015,downsampled100m_2015,
+             downsampled200m_2015,downsampled400m_2015,downsampled800m_2015,
+             downsampled1000m_2015,downsampled2000m_2015,downsampled4000m_2015,
+             downsampled8000m_2015,downsampled10000m_2015)
+
+write_stars(imperv_2015, ".tif")
+
+for (i in seq_along(ds_2015)) {
+  write_stars(ds_2015[[i]], paste0("impervious2015_downsampled_", i, ".tif"))
+}
+```
+
+As for 2018, since the native resolution for this map is 10m, instead we first downsample it to the same base resolution of 20m as the previous maps in the time-series. Then we perform the same downsampling schema.
+
+```{r}
+downsampled20m_2018 <- st_downsample(imperv_2018, c(1,1))
+downsampled40m_2018 <- st_downsample(downsampled20m_2018, c(1,1))
+downsampled80m_2018 <- st_downsample(downsampled20m_2018, c(3,3))
+downsampled100m_2018 <- st_downsample(downsampled20m_2018, c(4,4))
+downsampled200m_2018 <- st_downsample(downsampled20m_2018, c(9,9))
+downsampled400m_2018 <- st_downsample(downsampled20m_2018, c(19,19))
+downsampled800m_2018 <- st_downsample(downsampled20m_2018, c(39,39))
+downsampled1000m_2018 <- st_downsample(downsampled20m_2018, c(49,49))
+downsampled2000m_2018 <- st_downsample(downsampled20m_2018, c(99,99))
+downsampled4000m_2018 <- st_downsample(downsampled20m_2018, c(199,199))
+downsampled8000m_2018 <- st_downsample(downsampled20m_2018, c(399,399))
+downsampled10000m_2018 <- st_downsample(downsampled20m_2018, c(499,499))
+
+ds_2018 <- list(downsampled20m_2018,downsampled40m_2018,downsampled80m_2018,
+                downsampled100m_2018,downsampled200m_2018,downsampled400m_2018,
+                downsampled800m_2018,downsampled1000m_2018,downsampled2000m_2018,
+                downsampled4000m_2018,downsampled8000m_2018,downsampled10000m_2018)
+
+#write_stars(downsampled20m_2018, "impervious2018_20m.tif")
+
+for (i in seq_along(ds_2018)) {
+  write_stars(ds_2018[[i]], paste0("impervious2018_downsampled_", i, ".tif"))
+}
+```
+
+The time-series of binary imperviousness maps from 2006 to 2018, along with their downsampled by-products are saved.
+
+The next part of the analysis addresses the statistical standard error variances.
+
+
+#######################################TRASH_CODE##################################################
+```{r}
+year = c("2006","2009","2012","2015","2018")
+
+imperv_2006 |> st_apply(3, mean) |> pull(1) -> x
+
+calc_f = function(ds, cellsize) {
+  st_downsample(imperv_2006, c(ds,ds)) |> st_apply(3, mean) |> pull(1) -> y
+  e = se[[cellsize]]
+  ylim = c(min(1.15, min(y) - 2 * e), max(1.28, max(y) + 2 * e))
+  data.frame(year = year, ref = x-1, 
+	cellsize = as.numeric(cellsize), fraction = y-1, err = e,
+  	emin = pmax(0, y-1-2*e), emax = pmin(.3, y-1+2*e))
+}
+# Native is 20m
+ds = c(1, 3, 4, 9, 19, 39, 49, 99, 199, 399, 499)
+cs = c( "40", "80", "100", "200", "400", "800", "1000", "2000", "4000", "8000", "10000")
+all = do.call(rbind, mapply(calc_f, ds, cs, SIMPLIFY = FALSE))
+```
+
+```{r}
+stars_tibble <- as_tibble(imperv_2006, as_points = FALSE)
+
+# Print the structure of the tibble to understand its format
+str(stars_tibble)
+
+# Assuming your value column is named 'value' (replace with actual column name)
+# Count occurrences of value 1
+count_of_ones <- stars_tibble %>%
+  summarize(n = sum(V1 == 1, na.rm = TRUE))  # Replace 'V1' with the correct column name for raster values
+
+print(count_of_ones)
+```
+
+```{r}
+# Setup parallel backend
+cl <- makeCluster(detectCores() - 1) # Leave one core for other tasks
+registerDoParallel(cl)
+
+# Assume raster_data is your stars object and we want to parallelize across multiple bands
+results <- foreach(i =1) %dopar% {stars::st_downsample(imperv_2006, c(999,999))}
+
+# Combine results if needed
+downsampled_data <- do.call(c, results)
+
+# Stop the cluster
+stopCluster(cl)
+```
+
+```{r}
+year = c("2006","2009","2012","2015")
+
+impervious <- do.call(c, list(imperv_2006,imperv_2009,imperv_2012,imperv_2015))
+
+calc_f = function(ds, cellsize) {
+  st_downsample(imperv_2006, c(ds,ds)) |> st_apply(3, mean) |> pull(1) -> y
+  e = se[[cellsize]]
+  ylim = c(min(1.15, min(y) - 2 * e), max(1.28, max(y) + 2 * e))
+  data.frame(year = year, ref = x-1, 
+	cellsize = as.numeric(cellsize), fraction = y-1, err = e,
+  	emin = pmax(0, y-1-2*e), emax = pmin(.3, y-1+2*e))
+}
+# Native is 20m
+ds = c(1, 3, 4, 9, 19, 39, 49, 99, 199, 399, 499)
+cs = c( "40", "80", "100", "200", "400", "800", "1000", "2000", "4000", "8000", "10000")
+all = do.call(rbind, mapply(calc_f, ds, cs, SIMPLIFY = FALSE))
+```
+
+

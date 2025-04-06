@@ -1,0 +1,345 @@
+---
+title: "GaussQuad"
+author: "Yomna Eid"
+date: "2025-01-15"
+output: html_document
+---
+
+import data:
+```{r}
+library(stars)
+
+r <- read_stars(r"(C:\Users\yeid\Documents\Dead Laptop Files\Documents\1b. PhD\2. On-going Publications\1. Downsampling\Downsampled_Output\2006\impervious2006_20m.tif)", na.rm = TRUE) |> setNames("IMP2006") %>% st_as_stars() %>% na.omit()
+
+p = st_as_sfc(st_bbox(r))
+```
+
+compute the variance of the raster image:
+```{r}
+(v = var(as.vector(r[[1]]), na.rm = TRUE))
+```
+
+The different grid sizes:
+```{r}
+gridsizes = c(20, 40, 80, 100, 200, 400, 800, 1000, 2000, 4000, 8000, 10000)
+thinning = gridsizes / 10
+```
+
+Compute the standard errors associated with the different grid sizes, for
+random sampling:
+```{r}
+(n = prod(dim(r)) / (thinning^2))
+(se.random_sampling = sqrt(v/n))
+names(se.random_sampling) = gridsizes
+se.random_sampling
+```
+
+Now do this for regular sampling, using Ripley 1981:
+```{r}
+library(gstat)
+set.seed(1353)
+pts = st_sample(p, 35000)
+r.sample = st_extract(r, pts) %>% na.omit()
+dist = gridsizes
+v = variogram(IMP2006~1, r.sample, boundaries = dist)
+plot(v)
+m = "Exp"
+v0 = vgm(.1, m, 100)
+(v.model = fit.variogram(v, vgm(.1, m, 500, add.to = v0)))
+plot(v, v.model)
+
+#mean(variogramLine(v.model, covariance = TRUE, dist_vector = d, n)$gamma)
+v.model
+```
+1. MONTE-CARLO INTEGRATION
+
+Compute the mean point-point covariance function value, using random sampling
+(Monte-Carlo integration):
+```{r}
+n = 1e4
+make_unif_pts = function(bbox, n) {
+	x = runif(n, bbox["xmin"], bbox["xmax"])
+	y = runif(n, bbox["ymin"], bbox["ymax"])
+	as.matrix(cbind(x = x, y = y))
+}
+
+mean_cov = function(x, y, model) {
+	d = if (missing(y))
+			as.vector(as.matrix(dist(x)))
+		else {
+			all = rbind(x, y)
+			n1 = nrow(x)
+			n2 = nrow(y)
+			as.vector(as.matrix(dist(all))[(n1+1):(n1+n2),1:n1])
+		}
+	mean(variogramLine(v.model, covariance = TRUE, dist_vector = d, n)$gamma)
+}
+
+x = make_unif_pts(st_bbox(r), n)
+y = make_unif_pts(st_bbox(r), n)
+(C_mean = mean_cov(x, y, v.model))
+```
+
+Create a function that computes the SE using Ripley's 1981 eq. 3.4 (page 23),
+and use it:
+```{r}
+make_grid = function(size, bbox, n = Inf) {
+	x = seq(bbox["xmin"], bbox["xmax"], size)
+	y = seq(bbox["ymin"], bbox["ymax"], size)
+	grd = as.matrix(expand.grid(x = x, y = y))
+	if (n < nrow(grd))
+		grd = grd[sample(nrow(grd), n), ]
+	grd
+}
+
+compute_se = function(size, model, maxpts = 1e4, C_mean) {
+	grd = make_grid(size, st_bbox(r), maxpts)
+	pts = make_unif_pts(st_bbox(r), maxpts)
+	# eq 3.4, RHS part:
+	var = mean_cov(grd, model = v.model) -
+		2 * mean_cov(grd, pts, v.model) + C_mean
+	sqrt(var)
+}
+
+#sel = -(1:5)
+sel = TRUE
+se = sapply(gridsizes[sel], compute_se, model = v.model, C_mean = C_mean)
+names(se) = gridsizes[sel]
+se
+se.random_sampling 
+```
+
+2. GAUSS-QUADRATURE
+
+Now compute the mean point-point covariance function value, using deterministic rather than stochastic method of Gauss Quadrature, using systematic/symmetric sampling:
+```{r}
+dx = (bbox["xmax"] - bbox["xmin"])
+dy = (bbox["ymax"] - bbox["ymin"])
+x_mid = bbox["xmin"]+dx/2
+y_mid = bbox["ymin"]+dy/2
+
+n = 4
+t = c(-0.4305681558,
+		-0.1699905218,
+		0.1699905218,
+		0.4305681558)
+
+w = c(0.1739274226,
+		0.3260725774,
+		0.3260725774,
+		0.1739274226)
+
+for (i in n){
+  t_y = y_mid + t[i]*dy/2
+  t_x = x_mid + t[i]*dx/2
+  w_y = w[i]*dy/2
+  w_x = w[i]*dx/2
+}
+
+
+d = if (missing(y))
+			as.vector(as.matrix(dist(x))) else {
+			all = rbind(x, y)
+			n1 = nrow(x)
+			n2 = nrow(y)
+			as.vector(as.matrix(dist(all))[(n1+1):(n1+n2),1:n1])
+		}
+
+cov = v.model$psill[1] - v.model$psill[1]*(1-exp(-d/v.model$range[1])) + v.model$psill[2] - v.model$psill[2]*(1-exp(-d/v.model$range[2]))
+cov
+
+cov = 0.05682120 - 0.05682120*(1-exp(-abs(x-y)/81.30253)) + 0.04176899 - 0.04176899*(1-exp(-abs(x-y)/1182.16206))
+
+```
+
+```{r}
+# Define the covariance function
+covariance_function <- function(p1, p2) {
+
+  # Calculate Euclidean distance h between point1 and point2
+  h <- sqrt((p2[1] - p1[1])^2 + (p2[2] - p1[2])^2)
+  
+  term1 <- v.model$psill[1] - v.model$psill[1] * (1 - exp(-h/v.model$range[1]))
+  term2 <-  v.model$psill[2] -  v.model$psill[2] * (1 - exp(-h/v.model$range[2]))
+  cov <- term1 + term2
+  return(cov)
+}
+
+# Define discrete Gaussian nodes and weights (adapted for [-1, 1] interval)
+gauss_nodes <- c(-0.4305681558, -0.1699905218, 0.1699905218, 0.4305681558)
+gauss_weights <- c(0.1739274226, 0.3260725774, 0.3260725774, 0.1739274226)
+
+# Function for approximating the integral of the covariance function
+integrate_covariance <- function(x_range, y_range) {
+  # Map Gauss nodes from [-1, 1] to [min, max] interval
+  x_mapped <- ((x_range[2] - x_range[1]) / 2) * gauss_nodes + (x_range[2] + x_range[1]) / 2
+  y_mapped <- ((y_range[2] - y_range[1]) / 2) * gauss_nodes + (y_range[2] + y_range[1]) / 2
+  
+  integral_value <- 0
+  for (i in seq_along(gauss_nodes)) {
+    for (j in seq_along(gauss_nodes)) {
+      # Generate points based on mapped nodes
+      p1 <- c(x_mapped[i], y_mapped[i])
+      p2 <- c(x_mapped[j], y_mapped[j])
+      
+      cov_value <- covariance_function(p1, p2)
+      
+      # Add weighted covariance value to the integral
+      # Multiply the covariance value by the appropriate weights
+      integral_value <- integral_value + gauss_weights[i] * gauss_weights[j] * cov_value
+    }
+  }
+  # Scale by the width of the transformed interval
+  integral_value <- integral_value * ((diff(x_range) / 2) * (diff(y_range) / 2))
+  return(integral_value)
+}
+
+bbox <- st_bbox(r)
+
+# Define the range over which to integrate x and y
+x_range <- c(bbox["xmin"], bbox["xmax"])
+y_range <- c(bbox["ymin"], bbox["ymax"])
+
+# Perform the integration
+result <- integrate_covariance(x_range, y_range)
+cat("Approximate integral of the covariance function:", result, "\n")
+```
+
+```{r}
+install.packages("statmod")
+library(statmod)
+
+gauss_legendre_2d_integration <- function(f, n_x, n_y) {
+  quad_x <- gauss.quad(n_x, kind = "legendre")
+  quad_y <- gauss.quad(n_y, kind = "legendre")
+  integral_approximation <- 0
+  
+  for (i in 1:n_x) {
+    for (j in 1:n_y) {
+      integral_approximation <- integral_approximation +
+        quad_x$weights[i] * quad_y$weights[j] * f(quad_x$nodes[i], quad_y$nodes[j])
+    }
+  }
+  
+  return(integral_approximation)
+}
+
+# Example function for integrating e^(abs(x-y))
+f <- function(x, y) {
+  return(exp(abs(x - y)))  
+}
+
+result <- gauss_legendre_2d_integration(f, n_x = 5, n_y = 5)
+cat("The approximate double integral is:", result, "\n")
+```
+
+```{r}
+# Number of nodes for each dimension
+n <- 1e4
+
+gauss_legendre <- function(n) {
+  nodes <- rep(0, n)
+  weights <- rep(0, n)
+  
+  for (i in 1:n) {
+    xi <- cos(pi * (i - 0.25) / (n + 0.5))
+    
+    while(TRUE) {
+      p1 <- 1
+      p2 <- 0
+      
+      # Calculate Legendre polynomial values
+      for (j in 1:n) {
+        p3 <- p2
+        p2 <- p1
+        p1 <- ((2 * j - 1) * xi * p2 - (j - 1) * p3) / j
+      }
+      
+      # Derivative of the polynomial
+      pp <- n * (xi * p1 - p2) / (xi^2 - 1)
+      
+      # Newton's method for finding nodes
+      xi1 <- xi
+      xi <- xi1 - p1 / pp
+      
+      if (abs(xi - xi1) < 1e-10) break
+    }
+    
+    nodes[i] <- xi
+    weights[i] <- 2 / ((1 - xi^2) * pp^2)
+  }
+  
+  return(list(nodes = nodes, weights = weights))
+}
+
+# Transform nodes and weights to any interval [a, b]
+transform_gauss_legendre <- function(a, b, nodes, weights) {
+  transformed_nodes <- (b - a) / 2 * nodes + (b + a) / 2
+  transformed_weights <- (b - a) / 2 * weights
+  return(list(nodes = transformed_nodes, weights = transformed_weights))
+}
+
+# Define your intervals [a, b] for x and [c, d] for y
+bbox <- st_bbox(r)
+a <- bbox["xmin"]
+b <- bbox["xmax"]
+c <- bbox["ymin"]
+d <- bbox["ymax"]
+
+# Get nodes and weights for x and y
+gauss_result_x <- gauss_legendre(n)
+transformed_x <- transform_gauss_legendre(a, b, gauss_result_x$nodes, gauss_result_x$weights)
+
+gauss_result_y <- gauss_legendre(n)
+transformed_y <- transform_gauss_legendre(c, d, gauss_result_y$nodes, gauss_result_y$weights)
+
+nodes_x <- transformed_x$nodes
+weights_x <- transformed_x$weights
+
+nodes_y <- transformed_y$nodes
+weights_y <- transformed_y$weights
+
+m <- as.matrix(cbind(x = nodes_x, y = nodes_y))
+
+mean_cov = function(x, y, model) {
+	d = if (missing(y))
+			as.vector(as.matrix(dist(x)))
+		else {
+			all = rbind(x, y)
+			n1 = nrow(x)
+			n2 = nrow(y)
+			as.vector(as.matrix(dist(all))[(n1+1):(n1+n2),1:n1])
+		}
+	mean(variogramLine(v.model, covariance = TRUE, dist_vector = d, n)$gamma)
+}
+
+mean_cov = function(x, y, model) {
+	d = if (missing(y))
+			as.vector(as.matrix(dist(x)))
+		else {
+			all = rbind(x, y)
+			n1 = nrow(x)
+			n2 = nrow(y)
+			as.vector(as.matrix(dist(all))[(n1+1):(n1+n2),1:n1])
+		}
+	mean(variogramLine(v.model, covariance = TRUE, dist_vector = d, n)$gamma)
+}
+
+f <- mean_cov
+ 
+# Compute the double integral
+approximation <- 0
+for (i in 1:n) {
+  for (j in 1:n) {
+    approximation <- approximation + weights_x[i] * weights_y[j] * f(m[i], m[j],v.model)
+  }
+}
+
+cat("Approximated double integral:", approximation, "\n")
+```
+
+Save:
+```{r}
+rm(r) # big
+save.image("sampling.rda")
+```
