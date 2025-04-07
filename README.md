@@ -1,8 +1,9 @@
-EGU25 Poster titled “When is a finer spatial resolution justified in remote sensing analysis?”
+EGU25 Poster titled “When is a finer spatial resolution justified in remote sensing analysis?” {https://meetingorganizer.copernicus.org/EGU25/EGU25-19140.html}
 
 1.	Content
 
-1.1.	Sections\
+1.1.	Sections
+
   1.1.1.	 Introduction\
     1.1.1.1.	
     
