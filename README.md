@@ -55,11 +55,11 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
 
   1.3.1.	Plots of the statistical error bars to present the deterioration\
     1.3.1.1.	Once using the Monte Carlo method\
-    1.3.1.2.	Then using the Guass-Quadrature method\
+    1.3.1.2.	Then using the Guass-Quadrature method
   
-  1.3.2.	Flowchart of methodology\
+  1.3.2.	Flowchart of methodology
   
-  1.3.3.	 Maps of the datasets 1&2 over the study area\
+  1.3.3.	 Maps of the datasets 1&2 over the study area
   
   1.3.4.	Logos of the project, ifgi, uni, egu, QR-Code of Github repo, QR-Code of voting for student competition
 
