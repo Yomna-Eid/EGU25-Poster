@@ -9,7 +9,7 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
   1.1.2.	Research Objectives\
     1.1.2.1.	How do estimates of Forest fraction change when the classified image is gradually down-sampled from a 10-m resolution to 10-km resolution? \
     1.1.2.2.	How does the standard error of this fraction vary with down-sampling when using systematic non-random sampling? [1] \
-    1.1.2.3.	When does lowering the resolution stop being acceptable? \
+    1.1.2.3.	When does lowering the resolution stop being acceptable? 
   
   1.1.3.	Datasets\
     1.1.3.1.	
