@@ -4,7 +4,7 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
 
 **A.	Sections\**
 
-  1. Introduction\
+  1. Introduction
 
   2. Research Questions\
      RQ1.   How do estimates of Impervious fraction change when the classified image is gradually down-sampled from a 20-m resolution to 10-km resolution? \
@@ -12,6 +12,7 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
      RQ3.	How does the standard error of this fraction vary with down-sampling when using systematic non-random sampling (using Ripley's 1981)?\
      RQ4.	When does lowering the resolution stop being acceptable?\
      RQ5.   How does the Monte Carlo Integration (random stochastic) method compare to Gauss-Quadrature (systematic deterministic) method when computing complex covariance functions for evaluating the standard error using Ripley's 1981?
+       
   3. Datasets\
      a.	High Resolution Layer Maps of Imperviousness for Germany (North-Rhine Westphalia)\
      b. PRODES Deforestation Maps for Cerrado Biome of Brazil
