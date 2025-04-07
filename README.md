@@ -2,7 +2,7 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
 
 **1.	Content**
 
-**1.1.	Sections**__
+**1.1.	Sections/**
 
   1.1.1.	 Introduction\
     1.1.1.1.	
@@ -24,7 +24,7 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
 
   1.1.7.	References (if necessary) 
 
-**1.2.	Open Source Code **__
+**1.2.	Open Source Code/**
 
   1.2.1.	Preparation of the datasets
   
@@ -51,7 +51,7 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
     1.2.2.1.	Stochastic: Monte-Carlo integration of equation of standard error variances\
     1.2.2.2.	Deterministic: Gauss-Quadrature integration of standard error variances
 
-**1.3.	Figures**__
+**1.3.	Figures/**
 
   1.3.1.	Plots of the statistical error bars to present the deterioration\
     1.3.1.1.	Once using the Monte Carlo method\
@@ -63,5 +63,5 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
   
   1.3.4.	Logos of the project, ifgi, uni, egu, QR-Code of Github repo, QR-Code of voting for student competition
 
-**2.	Template\**
+**2.	Template**/
   2.1.	Posterdown package (Betterland) in R {https://github.com/brentthorne/posterdown/wiki/posterdown_betterland}
