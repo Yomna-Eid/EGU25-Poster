@@ -19,9 +19,9 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
   
   1.1.5.	Results
   
-  1.1.6.	Discussion and Conclusion\
+  1.1.6.	Discussion and Conclusion
 
-  1.1.7.	References (if necessary) \
+  1.1.7.	References (if necessary) 
 
 1.2.	Open Source Code \
   1.2.1.	Preparation of the datasets\
@@ -38,11 +38,11 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
       1.2.1.2.4.	Select polygons in the required study area\
       1.2.1.2.5.	Rasterize the vector dataset to produce the binary map (necessary for pixel-wise operation of down-sampling)\
       1.2.1.2.6.	Downsample from 30m resolution to 10km (same schema as Dataset 1)\
-      1.2.1.2.7.	Save maps and their downsampled by-products\
+      1.2.1.2.7.	Save maps and their downsampled by-products
   
   1.2.2.	Statistical Part using Ripley’s equation\
     1.2.2.1.	Stochastic: Monte-Carlo integration of equation of standard error variances\
-    1.2.2.2.	Deterministic: Gauss-Quadrature integration of standard error variances\
+    1.2.2.2.	Deterministic: Gauss-Quadrature integration of standard error variances
 
 1.3.	Figures\
   1.3.1.	Plots of the statistical error bars to present the deterioration\
@@ -50,7 +50,7 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
     1.3.1.2.	Then using the Guass-Quadrature method\
   1.3.2.	Flowchart of methodology\
   1.3.3.	 Maps of the datasets 1&2 over the study area\
-  1.3.4.	Logos of the project, ifgi, uni, egu, QR-Code of Github repo, QR-Code of voting for student competition\
+  1.3.4.	Logos of the project, ifgi, uni, egu, QR-Code of Github repo, QR-Code of voting for student competition
 
 2.	Template\
-  2.1.	Posterdown package (Betterland) in R\
+  2.1.	Posterdown package (Betterland) in R {https://github.com/brentthorne/posterdown/wiki/posterdown_betterland}
