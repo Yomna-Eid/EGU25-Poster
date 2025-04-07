@@ -12,12 +12,12 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
     1.1.2.3.	When does lowering the resolution stop being acceptable? \
   
   1.1.3.	Datasets\
-    1.1.3.1.	\
+    1.1.3.1.	
   
   1.1.4.	Methodology\
-    1.1.4.1.	\
+    1.1.4.1.	
   
-  1.1.5.	Results\
+  1.1.5.	Results
   
   1.1.6.	Discussion and Conclusion\
 
