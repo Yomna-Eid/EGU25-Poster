@@ -31,20 +31,20 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
   
     a.	Imperviousness maps
     
-      i.	Subset to North-Rhine Westphalia, Germany\
-      ii.	Binary classification based on literature threshold of 30%\
-      iii.	Change 2018 map to start from 20m resolution, like other maps from 2006, 2009, 2012, 2015\
-      iv.	Downsample from 20m resolution to 10km in steps\
+      i.	Subset to North-Rhine Westphalia, Germany
+      ii.	Binary classification based on literature threshold of 30%
+      iii.	Change 2018 map to start from 20m resolution, like other maps from 2006, 2009, 2012, 2015
+      iv.	Downsample from 20m resolution to 10km in steps
       v.	Save maps and their downsampled by-products
     
     b.	PRODES Deforestation maps
     
-      i.	Dataset availability from 2002-2024 uneven, so skip a year to maintain temporal frequency of even years (2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024)\
-      ii.	Clean dataset from unnecessary variables\
-      iii.	Subset the study area\
-      iv.	Select polygons in the required study area\
-      v.	Rasterize the vector dataset to produce the binary map (necessary for pixel-wise operation of down-sampling)**
-      vi.	Downsample from 30m resolution to 10km (same schema as Dataset 1)\
+      i.	Dataset availability from 2002-2024 uneven, so skip a year to maintain temporal frequency of even years (2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024)
+      ii.	Clean dataset from unnecessary variables
+      iii.	Subset the study area
+      iv.	Select polygons in the required study area
+      v.	Rasterize the vector dataset to produce the binary map (necessary for pixel-wise operation of down-sampling)
+      vi.	Downsample from 30m resolution to 10km (same schema as Dataset 1)
       vii.	Save maps and their downsampled by-products
       
     c.	Statistical Part using Ripley’s equation
@@ -61,7 +61,7 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
   
   2.	Flowchart of methodology
   
-  3.	 Maps of the datasets 1&2 over the study area
+  3.	Maps of the datasets 1&2 over the study area
   
   4.	Logos of the project, ifgi, uni, egu, QR-Code of Github repo, QR-Code of voting for student competition
 
