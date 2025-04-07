@@ -43,9 +43,9 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
       ii.	Clean dataset from unnecessary variables\
       iii.	Subset the study area\
       iv.	Select polygons in the required study area\
-      **1.2.1.2.5.	Rasterize the vector dataset to produce the binary map (necessary for pixel-wise operation of down-sampling)**
-      v.	Downsample from 30m resolution to 10km (same schema as Dataset 1)\
-      vi.	Save maps and their downsampled by-products
+      v.	Rasterize the vector dataset to produce the binary map (necessary for pixel-wise operation of down-sampling)**
+      vi.	Downsample from 30m resolution to 10km (same schema as Dataset 1)\
+      vii.	Save maps and their downsampled by-products
       
     c.	Statistical Part using Ripley’s equation
     
