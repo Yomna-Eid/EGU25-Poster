@@ -2,7 +2,7 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
 
 1.	Content
 
-1.1.	Sections
+1.1.	Sections\\
   1.1.1.	 Introduction
     1.1.1.1.	
   1.1.2.	Research Objectives
