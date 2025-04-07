@@ -4,7 +4,7 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
 
 1.1.	Sections\
   1.1.1.	 Introduction\
-    1.1.1.1.	\
+    1.1.1.1.	
     
   1.1.2.	Research Objectives\
     1.1.2.1.	How do estimates of Forest fraction change when the classified image is gradually down-sampled from a 10-m resolution to 10-km resolution? \
