@@ -24,6 +24,7 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
 
   1.1.7.	References (if necessary) 
 
+
 **1.2.	Open Source Code\**
 
   1.2.1.	Preparation of the datasets
@@ -42,7 +43,7 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
       1.2.1.2.2.	Clean dataset from unnecessary variables\
       1.2.1.2.3.	Subset the study area\
       1.2.1.2.4.	Select polygons in the required study area\
-      1.2.1.2.5.	Rasterize the vector dataset to produce the binary map (necessary for pixel-wise operation of down-sampling)\
+      **1.2.1.2.5.	Rasterize the vector dataset to produce the binary map (necessary for pixel-wise operation of down-sampling)**
       1.2.1.2.6.	Downsample from 30m resolution to 10km (same schema as Dataset 1)\
       1.2.1.2.7.	Save maps and their downsampled by-products
   
@@ -50,6 +51,7 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
     
     1.2.2.1.	Stochastic: Monte-Carlo integration of equation of standard error variances\
     1.2.2.2.	Deterministic: Gauss-Quadrature integration of standard error variances
+
 
 **1.3.	Figures\**
 
