@@ -18,12 +18,19 @@ EGU25 Poster titled “When is a finer spatial resolution justified in remote se
      b. PRODES Deforestation Maps for Cerrado Biome of Brazil
   
   4. Methodology
-  
-  5. Results
-  
-  6. Discussion and Conclusion
+     a. Gauss Quadrature
+       i. Block-Sample Covariance
+          ![image](https://github.com/user-attachments/assets/74683504-a73e-4d02-958b-e929378ae922)
+      ii. Block-Block Covariance
+          ![image](https://github.com/user-attachments/assets/1f9e1800-e4d1-4550-9f46-ea19cc12c069)
+     that is
+          ![image](https://github.com/user-attachments/assets/ab86583d-0504-4129-93e2-880726122625)
 
-  7. References (if necessary) 
+  6. Results
+  
+  7. Discussion and Conclusion
+
+  8. References (if necessary) 
 
 **B.	Open Source Code**
 
