@@ -50,6 +50,22 @@ plot(v, v.model)
 
 v.model
 ```
+
+Pure nugget effect:
+```{r}
+set.seed(123)
+pts <- cbind(runif(100), runif(100)) %>% st_multipoint() %>% st_sfc()
+data <- rnorm(100)
+sample_data  <- st_sf(coords = pts, x = data)
+
+v <- variogram(x ~ 1, sample_data)
+plot(v)
+nugget_model <- vgm(psill = 1, model = "Nug", range = 0, nugget = 1)
+v.model <- fit.variogram(v, model = nugget_model)
+v.model
+plot(v, v.model, main = "Variogram with Pure Nugget Effect")
+```
+
 Now we try two methodologies for computing the covariance function and the standard error using Ripley's 1981:
 
 1. MONTE-CARLO INTEGRATION
