@@ -112,59 +112,202 @@ se.random_sampling
 
 2. GAUSS-QUADRATURE
 
-Now compute the mean point-point covariance function value, using deterministic (rather than stochastic - above) method of Gauss Quadrature, using systematic/symmetric sampling:
+Now compute the covariance function values, using deterministic (rather than stochastic - above) method of Gauss Quadrature, using systematic/symmetric sampling:
 
 ```{r}
-# Define the covariance function
-covariance_function <- function(p1, p2) {
+# Define Gaussian quadrature points and weights
 
-  # Calculate Euclidean distance h between point1 and point2
-  h <- sqrt((p2[1] - p1[1])^2 + (p2[2] - p1[2])^2)
+#n = 4
+gauss <- c(-0.8611363116, -0.3399810436, 0.3399810436, 0.8611363116)
+gauss_w <- c(0.3478548452, 0.6521451548, 0.6521451548, 0.3478548452)
+ 
+#n = 6
+gauss <- c(-0.9324695142, -0.6612093864, -0.2386191860, 0.2386191860, 0.6612093864, 0.9324695142)
+gauss_w <- c(0.1713244924, 0.3607615730, 0.4679139346, 0.4679139346, 0.3607615730, 0.1713244924)
+
+#n = 8
+gauss <- c(-0.96028985649753623168, -0.79666647741362673959, -0.52553240991632898582, -0.18343464249564980494, 0.18343464249564980494, 0.52553240991632898582, 0.79666647741362673959, 0.96028985649753623168)
+gauss_w <- c(0.10122853629037625915, 0.22238103445337447054, 0.31370664587788728734, 0.36268378337836198297, 0.36268378337836198297, 0.31370664587788728734, 0.22238103445337447054, 0.10122853629037625915)
+
+#n = 10
+gauss <- c(-0.97390652851717172008, -0.86506336668898451073, -0.67940956829902440623, -0.43339539412924719080, -0.14887433898163121089, 0.14887433898163121089, 0.43339539412924719080, 0.67940956829902440623, 0.86506336668898451073, 0.97390652851717172008)
+gauss_w <- c(0.06667134430868813759, 0.14945134915058059315, 0.21908636251598204400, 0.26926671930999635509, 0.29552422471475287017, 0.29552422471475287017, 0.26926671930999635509, 0.21908636251598204400, 0.14945134915058059315, 0.06667134430868813759)
+
+#n = 20
+gauss <- c(-0.99312859918509492479, -0.96397192727791379127, -0.91223442825132590587, -0.83911697182221882339, -0.74633190646015079261, -0.63605368072651502545, -0.51086700195082709800, -0.37370608871541956067, -0.22778585114164507808, -0.07652652113349733375, 0.07652652113349733375, 0.22778585114164507808, 0.37370608871541956067, 0.51086700195082709800, 0.63605368072651502545, 0.74633190646015079261, 0.83911697182221882339, 0.91223442825132590587, 0.96397192727791379127, 0.99312859918509492479)
+gauss_w <- c(0.01761400713915211831, 0.04060142980038694133, 0.06267204833410906357, 0.08327674157670474873, 0.10193011981724043504, 0.11819453196151841731, 0.13168863844917662690, 0.14209610931838205133, 0.14917298647260374679, 0.15275338713072585070, 0.15275338713072585070, 0.14917298647260374679, 0.14209610931838205133, 0.13168863844917662690, 0.11819453196151841731, 0.10193011981724043504, 0.08327674157670474873, 0.06267204833410906357, 0.04060142980038694133, 0.01761400713915211831)
+```
+
+First, we compute the Block-Sample Covariance using GQ-2D:
+
+(Testing with a Pure Nugget model)
+```{r}
+# Define the covariance function for a cumulative nugget effect
+cov_func <- function(x0, y0, x1, y1) {
+  # Compute h as the Euclidean distance
+  h <- sqrt((x1 - x0)**2 + (y1 - y0)**2)
+  # Calculate the covariance: equals nugget_sill when h = 0, otherwise 0
+  if (h == 0) {
+    return(1) # Assuming this is the nugget effect variance
+  } else {
+    return(0)
+  }}
+
+# Function to perform Gaussian quadrature in 2D
+gaussian_quadrature_2d <- function(cov_func, r) {
+
+  # Extract integration limits
+  bbox <- st_bbox(r)
+  x_min <- bbox["xmin"]
+  x_max <- bbox["xmax"]
+  y_min <- bbox["ymin"]
+  y_max <- bbox["ymax"]
   
-  term1 <- v.model$psill[1] - v.model$psill[1] * (1 - exp(-h/v.model$range[1]))
-  term2 <-  v.model$psill[2] -  v.model$psill[2] * (1 - exp(-h/v.model$range[2]))
-  cov <- term1 + term2
-  return(cov)
-}
-
-# Define discrete Gaussian nodes and weights (adapted for [-1, 1] interval) from literature
-gauss_nodes <- c(-0.4305681558, -0.1699905218, 0.1699905218, 0.4305681558)
-gauss_weights <- c(0.1739274226, 0.3260725774, 0.3260725774, 0.1739274226)
-
-# Function for approximating the integral of the covariance function
-integrate_covariance <- function(x_range, y_range) {
-  # Map Gauss nodes from [-1, 1] to [min, max] interval
-  x_mapped <- ((x_range[2] - x_range[1]) / 2) * gauss_nodes + (x_range[2] + x_range[1]) / 2
-  y_mapped <- ((y_range[2] - y_range[1]) / 2) * gauss_nodes + (y_range[2] + y_range[1]) / 2
-  
-  integral_value <- 0
-  for (i in seq_along(gauss_nodes)) {
-    for (j in seq_along(gauss_nodes)) {
-      # Generate points based on mapped nodes
-      p1 <- c(x_mapped[i], y_mapped[i])
-      p2 <- c(x_mapped[j], y_mapped[j])
-      
-      cov_value <- covariance_function(p1, p2)
-      
-      # Add weighted covariance value to the integral
-      # Multiply the covariance value by the appropriate weights
-      integral_value <- integral_value + gauss_weights[i] * gauss_weights[j] * cov_value
-    }
+  # Transform quadrature points to the integration domain
+  transform_x <- function(xi) {
+    0.5 * (x_max - x_min) * xi + 0.5 * (x_max + x_min)
   }
-  # Scale by the width of the transformed interval
-  integral_value <- integral_value * ((diff(x_range) / 2) * (diff(y_range) / 2))
+  
+  transform_y <- function(yi) {
+    0.5 * (y_max - y_min) * yi + 0.5 * (y_max + y_min)
+  }
+  
+  transform_wx <- function(weight){
+    0.5 * (x_max - x_min) * weight
+  }
+
+  transform_wy <- function(weight){
+    0.5 * (y_max - y_min) * weight
+  }
+
+  # Transform gauss weights to the integration domain
+  #gauss_wx <- 0.5 * (x_max - x_min) * gauss_w
+  #gauss_wy <- 0.5 * (y_max - y_min) * gauss_w
+
+  # Initialize integral value
+  integral_value <- 0
+
+  # Example Sample point
+  x0 = 9
+  y0 = 3
+
+  # Perform double summation over Gaussian quadrature points
+  for (i in 1:length(gauss)) {
+    for (j in 1:length(gauss)) {
+      # Map quadrature points to the integration domain
+      x1 <- transform_x(gauss[i])  # First point in x
+      y1 <- transform_y(gauss[j])  # First point in y
+      gauss_wx <- transform_wx(gauss_w[i])
+      gauss_wy <- transform_wy(gauss_w[j])
+      # Evaluate the covariance function using h
+      cov_val <- cov_func(x0, y0, x1, y1)
+      integral_value <- integral_value +  gauss_wx * gauss_wy * cov_val
+      # debug using print(paste("x0:", x0, "y0:", y0, "x1:", x1, "y1:", y1, "cov_val:", cov_val, "integral_value:", integral_value))
+        }
+      }
+  # Scale by the area of the block
+  area <- (x_max - x_min) * (y_max - y_min)
+  integral_value <- integral_value / area
   return(integral_value)
 }
 
-bbox <- st_bbox(r)
+# Compute the integral
+result <- gaussian_quadrature_2d(cov_func, sample_data)
 
-# Define the range over which to integrate x and y
-x_range <- c(bbox["xmin"], bbox["xmax"])
-y_range <- c(bbox["ymin"], bbox["ymax"])
+# Print the result
+cat("The integral of the covariance function over the domain is:", result, "\n")
+```
 
-# Perform the integration
-result <- integrate_covariance(x_range, y_range)
-cat("Approximate integral of the covariance function:", result, "\n")
+Next, we compute the Block-Block Covariance by extending the GQ-2D:
+
+```{r}
+# Define the covariance function for a cumulative nugget effect
+cov_func <- function(x2, y2, x1, y1) {
+  # Compute h as the Euclidean distance
+  h <- sqrt((x1 - x2)**2 + (y1 - y2)**2)
+  # # Testing by calculating the covariance value for a pure nugget model (cov equals nugget_sill when h = 0, otherwise 0)
+  #   if (h < 1e-8) {
+  #     return(0)
+  #   } else {
+  #     return(variogramLine(v.model, covariance = TRUE, dist_vector = h)$gamma)
+  #     }
+  # Double Exponential covariance function
+  term1 <- v.model$psill[1] * (exp(-h/v.model$range[1]))
+  term2 <- v.model$psill[2] * (exp(-h/v.model$range[2]))
+  return(term1 + term2) 
+  }
+
+# Function to perform Gaussian quadrature in 2D
+gaussian_quadrature_2d <- function(cov_func, r) {
+
+  # Extract integration limits
+  bbox <- st_bbox(r)
+  x_min <- bbox["xmin"]
+  x_max <- bbox["xmax"]
+  y_min <- bbox["ymin"]
+  y_max <- bbox["ymax"]
+
+  # Transform quadrature points to the integration domain
+  transform_x <- function(xi) {
+    0.5 * (x_max - x_min) * xi + 0.5 * (x_max + x_min)
+  }
+  transform_y <- function(yi) {
+    0.5 * (y_max - y_min) * yi + 0.5 * (y_max + y_min)
+  }
+  transform_wx <- function(weight){
+    0.5 * (x_max - x_min) * weight
+  }
+  transform_wy <- function(weight){
+    0.5 * (y_max - y_min) * weight
+  }
+  
+  # Transform gauss weights to the integration domain
+  #gauss_wx <- 0.5 * (x_max - x_min) * gauss_w
+  #gauss_wy <- 0.5 * (y_max - y_min) * gauss_w
+
+  # Initialize integral value
+  integral_value <- 0
+
+  # Perform double summation over Gaussian quadrature points
+  for (i in seq_along(gauss)) {
+    for (j in seq_along(gauss)) {
+      # Map quadrature points to the integration domain
+      x1 <- transform_x(gauss[i])  # First point in x
+      y1 <- transform_y(gauss[j])  # First point in y
+      gauss_wx1 <- transform_wx(gauss_w[i])
+      gauss_wy1 <- transform_wy(gauss_w[j])
+      
+      first_integral <- 0
+
+      for (k in seq_along(gauss)) {
+        for (l in seq_along(gauss)) {
+     	  # Map quadrature points to the integration domain
+      	  x2 <- transform_x(gauss[k])  # First point in x
+	  y2 <- transform_y(gauss[l])  # First point in y
+      	  gauss_wx2 <- transform_wx(gauss_w[k])
+      	  gauss_wy2 <- transform_wy(gauss_w[l])
+  	  cov_val <- cov_func(x2, y2, x1, y1)
+
+      	  first_integral <- first_integral + gauss_wx2 * gauss_wy2 * cov_val 
+      
+		#print(paste(gauss_wy2, "first_integral:", first_integral))
+      		#print(paste("x2:", x2, "y2:", y2, "x1:", x1, "y1:", y1, "cov_val:", cov_val, "integral_value:", integral_value))
+	  }
+	}
+      integral_value <- integral_value + first_integral * gauss_wx1 * gauss_wy1 
+      }
+    }
+  # Scale by the area of the block
+  area <- (x_max - x_min) * (y_max - y_min)
+  integral_value <- integral_value / area**2
+  return(integral_value)
+}
+
+# Compute the integral
+result <- gaussian_quadrature_2d(cov_func, r)
+
+# Print the result
+cat("The integral of the covariance function over the domain is:", result, "\n")
 ```
 
 Save:
