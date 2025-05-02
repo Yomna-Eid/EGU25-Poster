@@ -812,22 +812,3 @@ title(paste(cellsize, "m regular sampling w/ Gauss-Quadrature"))
 
 dev.off()
 ```
-
-```{r}
-#tiff("/tmp/res.tif", 15, 10, units = "in", res = 300)
-
-f = function(x) data.frame(cellsize = paste(x$cellsize, "m"))
-
-ggplot() +
-  geom_line(aes(y = ref), lwd = 3, col = 'grey') +
-  geom_point(aes(y = fraction)) +
-  geom_line(aes(y = fraction), lty = 2) +
-  facet_wrap(cellsize ~., ncol = 3, labeller = f) + 
-  labs(x = "Year", y = "Impervioussness Fraction",
-       title = "") +
-  theme(plot.title = element_text(hjust = 0.5, face = "bold")) + 
-  geom_errorbar(aes(ymin=fraction-2*err, ymax=fraction+2*err),width=0.2) +
-  geom_errorbar(aes(ymin=emin, ymax=emax), width=0.2) +
-  ylim(0, .3)
-#dev.off()
-```
