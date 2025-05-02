@@ -1,77 +1,16 @@
-EGU25 Poster titled “When is a finer spatial resolution justified in remote sensing analysis?” {https://meetingorganizer.copernicus.org/EGU25/EGU25-19140.html}
+# When is a finer spatial resolution justified in remote sensing analysis?
+### [EGU25 Poster](https://meetingorganizer.copernicus.org/EGU25/EGU25-19140.html)
 
-**I.	Content**
+**Abstract**:
 
-**A.	Sections**
+Remote sensing analysis is often used to provide supporting information for evidence-informed policy-making. Typically, such analysis presents results as classification maps, such as a land cover classification used to estimate deforestation areas in a region. For such analyses, where aggregated areal values of specific classes are the primary targets, a critical question arises: do the results significantly degrade when lower spatial resolution Earth Observation (EO) products are used instead of higher-resolution ones?
 
-  1. Introduction
+EO products like Dynamic World land use and land cover maps, produced at a high temporal and spatial resolution (5 days and 10m, respectively), are built on the widely held belief that higher resolutions inherently yield better results. However, with the exponential growth in data volumes and the computational demands of high-resolution workflows, it becomes increasingly important to determine where these resource-intensive approaches provide meaningful advantages — and where they do not — to balance computational efficiency with the need for accuracy in remote sensing workflows.
 
-  2. Research Questions\
-     RQ1.   How do estimates of Impervious fraction change when the classified image is gradually down-sampled from a 20-m resolution to 10-km resolution? \
-     RQ2.  How do estimates of Forest fraction change when the classified image is gradually down-sampled from a 30-m resolution to 12-km resolution? \
-     RQ3.	How does the standard error of this fraction vary with down-sampling when using systematic non-random sampling (using Ripley's 1981)?\
-     RQ4.	When does lowering the resolution stop being acceptable?\
-     RQ5.   How does the Monte Carlo Integration (random stochastic) method compare to Gauss-Quadrature (systematic deterministic) method when computing complex covariance functions for evaluating the standard error using Ripley's 1981?
-       
-  3. Datasets\
-     a.	High Resolution Layer Maps of Imperviousness for Germany (North-Rhine Westphalia)\
-     b. PRODES Deforestation Maps for Cerrado Biome of Brazil
-  
-  4. Methodology
-     a. Gauss Quadrature
-       i. Block-Sample Covariance
-          ![image](https://github.com/user-attachments/assets/74683504-a73e-4d02-958b-e929378ae922)
-      ii. Block-Block Covariance
-          ![image](https://github.com/user-attachments/assets/1f9e1800-e4d1-4550-9f46-ea19cc12c069)
-     that is
-          ![image](https://github.com/user-attachments/assets/ab86583d-0504-4129-93e2-880726122625)
+To address this question, we examine two case studies: deforestation in the Cerrado Biome of Brazil, and the imperviousness of sealed surfaces in Germany. Classification maps from each study are systematically downsampled from their native resolutions in steps up to 10 km spatial resolution. Using Ripley’s Equation1, numerically approximated with a Gaussian-Quadrature approach, we compute standard errors to assess the impact of spatial resolution on classification accuracy.
 
-  6. Results
-  
-  7. Discussion and Conclusion
+We report our findings on how the aggregated target values derived from lower-resolution data compare to those from higher-resolution inputs. We also try to identify the resolution thresholds beyond which the quality of the final product loses acceptable representation of the phenomena in the selected use cases.
 
-  8. References (if necessary) 
+_1 See Eq. 3.4, page 23 in Ripley, B.D. (1981), “Spatial Sampling” in Spatial Statistics._
 
-**B.	Open Source Code**
-
-  1.	Preparation of the datasets
-  
-    a.	Imperviousness maps
-    
-      i.	Subset to North-Rhine Westphalia, Germany
-      ii.	Binary classification based on literature threshold of 30%
-      iii.	Change 2018 map to start from 20m resolution, like other maps from 2006, 2009, 2012, 2015
-      iv.	Downsample from 20m resolution to 10km in steps
-      v.	Save maps and their downsampled by-products
-    
-    b.	PRODES Deforestation maps
-    
-      i.	Dataset availability from 2002-2024 uneven, so skip a year to maintain temporal frequency of even years (2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024)
-      ii.	Clean dataset from unnecessary variables
-      iii.	Subset the study area
-      iv.	Select polygons in the required study area
-      v.	Rasterize the vector dataset to produce the binary map (necessary for pixel-wise operation of down-sampling)
-      vi.	Downsample from 30m resolution to 10km (same schema as Dataset 1)
-      vii.	Save maps and their downsampled by-products
-      
-    c.	Statistical Part using Ripley’s equation
-    
-    i.	Stochastic: Monte-Carlo integration of equation of standard error variances\
-    ii.	Deterministic: Gauss-Quadrature integration of standard error variances
-
-
-**C.	Figures**
-
-  1.	Plots of the statistical error bars to present the deterioration\
-    a.	Once using the Monte Carlo method\
-    b.	Then using the Guass-Quadrature method
-  
-  2.	Flowchart of methodology
-  
-  3.	Maps of the datasets 1&2 over the study area
-  
-  4.	Logos of the project, ifgi, uni, egu, QR-Code of Github repo, QR-Code of voting for student competition
-
-**II.	Template**
-
-  1.	Posterdown package (Betterland) in R {https://github.com/brentthorne/posterdown/wiki/posterdown_betterland}
+**How to cite:** Eid, Y. and Pebesma, E.: When is a finer spatial resolution justified in remote sensing analysis?, EGU General Assembly 2025, Vienna, Austria, 27 Apr–2 May 2025, EGU25-19140, https://doi.org/10.5194/egusphere-egu25-19140, 2025.
